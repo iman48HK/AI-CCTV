@@ -12,7 +12,8 @@ if ! command -v node >/dev/null 2>&1; then
 fi
 
 apt-get update -qq
-apt-get install -y -qq nginx openssl curl
+# ffmpeg: required for RTSP → HLS transcoding (fluent-ffmpeg) on CCTV view
+apt-get install -y -qq nginx openssl curl ffmpeg
 
 mkdir -p /etc/nginx/ssl
 if [[ ! -f /etc/nginx/ssl/kwh.crt ]]; then
@@ -45,25 +46,27 @@ CORS_ALLOW_HTTPS=true
 NODE_ENV=production
 EOF
 
-mkdir -p "${APP_ROOT}/backend/uploads/siteplans"
+mkdir -p "${APP_ROOT}/backend/uploads/siteplans" "${APP_ROOT}/backend/tmp/hls" "${APP_ROOT}/backend/tmp/thumbnails"
 
 cd "${APP_ROOT}/backend"
 npm ci --omit=dev 2>/dev/null || npm install --omit=dev
 
-MONGO_DATA="/root/mongo-data"
-mkdir -p "$MONGO_DATA"
-
 fuser -k 1000/tcp 2>/dev/null || true
 pkill -f 'node.*server.js' 2>/dev/null || true
-pkill -f '[m]ongod' 2>/dev/null || true
-sleep 2
+systemctl stop kwh-backend 2>/dev/null || true
+sleep 1
 
-if command -v mongod >/dev/null 2>&1; then
-  nohup mongod --dbpath "$MONGO_DATA" --bind_ip 127.0.0.1 --port 27017 \
-    --wiredTigerCacheSizeGB 1 >> /root/mongod.log 2>&1 &
-elif [[ -x /opt/mongodb/bin/mongod ]]; then
-  nohup /opt/mongodb/bin/mongod --dbpath "$MONGO_DATA" --bind_ip 127.0.0.1 --port 27017 >> /root/mongod.log 2>&1 &
-else
+# MongoDB: use systemd + /var/lib/mongodb (mongodb-org). Do NOT pkill mongod — that leaves DB
+# down and breaks reboots. Legacy deploys used nohup on /root/mongo-data; free :27017 once
+# so we can hand the port to the packaged service.
+if [[ -f /usr/lib/systemd/system/mongod.service ]] || [[ -f /lib/systemd/system/mongod.service ]]; then
+  if fuser 27017/tcp >/dev/null 2>&1; then
+    fuser -k 27017/tcp 2>/dev/null || true
+    sleep 2
+  fi
+fi
+
+if ! command -v mongod >/dev/null 2>&1; then
   echo "Installing MongoDB..."
   rm -f /usr/share/keyrings/mongodb-server-7.0.gpg
   curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --batch --yes --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg
@@ -76,7 +79,22 @@ else
   echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu ${CODENAME}/mongodb-org/7.0 multiverse" > /etc/apt/sources.list.d/mongodb-org-7.0.list
   apt-get update -qq
   apt-get install -y -qq mongodb-org mongodb-mongosh || apt-get install -y -qq mongodb-org || true
-  if command -v mongod >/dev/null 2>&1; then
+fi
+
+if [[ -f /usr/lib/systemd/system/mongod.service ]] || [[ -f /lib/systemd/system/mongod.service ]]; then
+  install -d -o mongodb -g mongodb -m 755 /var/lib/mongodb 2>/dev/null || true
+  systemctl enable mongod
+  systemctl restart mongod
+elif [[ -x /opt/mongodb/bin/mongod ]]; then
+  MONGO_DATA="/root/mongo-data"
+  mkdir -p "$MONGO_DATA"
+  if ! pgrep -x mongod >/dev/null; then
+    nohup /opt/mongodb/bin/mongod --dbpath "$MONGO_DATA" --bind_ip 127.0.0.1 --port 27017 >> /root/mongod.log 2>&1 &
+  fi
+else
+  MONGO_DATA="/root/mongo-data"
+  mkdir -p "$MONGO_DATA"
+  if ! pgrep -x mongod >/dev/null; then
     nohup mongod --dbpath "$MONGO_DATA" --bind_ip 127.0.0.1 --port 27017 \
       --wiredTigerCacheSizeGB 1 >> /root/mongod.log 2>&1 &
   fi
@@ -101,7 +119,8 @@ fi
 cat > /etc/systemd/system/kwh-backend.service <<UNIT
 [Unit]
 Description=KWH Face App API
-After=network.target
+After=network.target mongod.service
+Wants=mongod.service
 
 [Service]
 Type=simple

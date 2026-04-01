@@ -107,7 +107,7 @@
               </option>
             </select>
           </label>
-          <label v-if="isSystemAdmin && !editing">
+          <label v-if="isSystemAdmin">
             <span>Department</span>
             <select v-model="form.departmentId">
               <option value="">None</option>
@@ -226,13 +226,16 @@ function openEdit(u) {
 
 async function saveEdit() {
   try {
+    const payload = {
+      fullName: form.value.fullName,
+      role: form.value.role,
+    }
+    if (isSystemAdmin.value) {
+      payload.departmentId = form.value.departmentId ? form.value.departmentId : null
+    }
     const res = await api(`/users/${editing.value._id}`, {
       method: 'PATCH',
-      body: JSON.stringify({
-        fullName: form.value.fullName,
-        role: form.value.role,
-        departmentId: form.value.departmentId || undefined,
-      }),
+      body: JSON.stringify(payload),
     })
     if (!res.ok) {
       const d = await res.json().catch(() => ({}))

@@ -202,7 +202,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { api, ROLES } from '../api.js'
 import { assertCameraSecureContext } from '../utils/camera.js'
 
-defineEmits(['back', 'logout'])
+const emit = defineEmits(['back', 'logout', 'profile-updated'])
 
 const user = ref(null)
 const loading = ref(true)
@@ -255,6 +255,7 @@ async function loadProfile() {
     user.value = await res.json()
     fullName.value = user.value.fullName || ''
     avatarUrl.value = user.value.avatar?.url || ''
+    emit('profile-updated', user.value)
   } catch (e) {
     error.value = e.message || 'Failed to load profile'
   } finally {
@@ -281,6 +282,7 @@ async function saveProfile() {
     user.value = await res.json()
     fullName.value = user.value.fullName || ''
     avatarUrl.value = user.value.avatar?.url || ''
+    emit('profile-updated', user.value)
   } catch (e) {
     error.value = e.message || 'Failed to update profile'
   } finally {

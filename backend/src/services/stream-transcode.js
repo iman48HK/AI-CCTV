@@ -4,6 +4,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import Camera from '../models/Camera.js';
 
+if (process.env.FFMPEG_PATH) {
+  ffmpeg.setFfmpegPath(process.env.FFMPEG_PATH);
+}
+if (process.env.FFPROBE_PATH) {
+  ffmpeg.setFfprobePath(process.env.FFPROBE_PATH);
+}
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const HLS_DIR = path.join(__dirname, '../../tmp/hls');
 const THUMBNAIL_DIR = path.join(__dirname, '../../tmp/thumbnails');

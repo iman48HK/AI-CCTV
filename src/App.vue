@@ -44,6 +44,7 @@
         <ProfileView
           @back="currentView = 'dashboard'"
           @logout="handleLogout"
+          @profile-updated="syncAuthUser"
         />
       </div>
       <div v-else-if="currentView === 'capture'" class="app__view">
@@ -114,6 +115,9 @@ onMounted(() => {
     authUser.value = u ? JSON.parse(u) : null
   } catch (_) {}
   fetchDashboardCounts()
+  if (token) {
+    refreshAuthUser()
+  }
 })
 watch(currentView, (v) => {
   if (v === 'dashboard') {
@@ -145,6 +149,22 @@ async function fetchDashboardCounts() {
 onUnmounted(() => {
   window.removeEventListener('auth:session-expired', onSessionExpired)
 })
+
+function syncAuthUser(user) {
+  if (!user || typeof user !== 'object') return
+  authUser.value = user
+  localStorage.setItem('authUser', JSON.stringify(user))
+}
+
+async function refreshAuthUser() {
+  if (!isAuthenticated.value) return
+  try {
+    const res = await api('/users/me')
+    if (!res.ok) return
+    const u = await res.json()
+    syncAuthUser(u)
+  } catch (_) {}
+}
 
 function handleLoggedIn(data) {
   sessionExpired.value = false
