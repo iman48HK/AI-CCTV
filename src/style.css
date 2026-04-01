@@ -1,0 +1,78 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  /* Design spec: deep navy background */
+  --bg-primary: #163645;
+  /* Glassmorphism: white 20% alpha base, 40% active */
+  --bg-card: rgba(255, 255, 255, 0.2);
+  --bg-card-active: rgba(255, 255, 255, 0.4);
+  /* Text & icons: contrast against semi-transparent white */
+  --text-primary: #163645;
+  --text-muted: rgba(22, 54, 69, 0.85);
+  /* Card border: subtle white 10% */
+  --card-border: rgba(255, 255, 255, 0.1);
+  /* Soft drop shadow: blur 20px, 15% opacity */
+  --shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  --shadow-hover: 0 8px 28px rgba(0, 0, 0, 0.2);
+  --shadow-press: 0 2px 12px rgba(0, 0, 0, 0.12);
+  /* Rounded corners: more round */
+  --radius: 44px;
+  --transition: 0.3s ease-in-out;
+}
+
+html {
+  font-size: 16px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Normalize all dropdowns to white background + black text */
+select,
+select option,
+select optgroup {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Subtle pattern for main content area (sidebar layout) */
+.app--with-sidebar .app__main {
+  position: relative;
+}
+
+.app--with-sidebar .app__main::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle at 20% 80%,
+    rgba(255, 255, 255, 0.03) 0%,
+    transparent 50%
+  ),
+  radial-gradient(
+    circle at 80% 20%,
+    rgba(255, 255, 255, 0.02) 0%,
+    transparent 40%
+  );
+  pointer-events: none;
+  border-radius: var(--radius);
+}

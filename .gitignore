@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+
+# Build
+dist/
+
+# Environment and secrets
+.env
+backend/.env
+*.pem
+
+# Local MongoDB data
+mongo-data/
+mongodb-data/
+
+# Runtime uploads / temp
+backend/tmp/
+backend/src/uploads/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+
+# Deploy bundles / dumps
+deploy/mongo-dump/
+*.tgz
+
+# Cursor / tooling
+.cursor/

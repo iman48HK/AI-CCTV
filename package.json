@@ -1,0 +1,24 @@
+{
+  "name": "secureos-dashboard",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:all": "concurrently -k -n web,api -c cyan,magenta \"npm run dev\" \"npm run dev:backend\"",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "hls.js": "^1.6.15",
+    "pdfjs-dist": "^5.5.207",
+    "rxjs": "^7.8.1",
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "concurrently": "^9.1.2",
+    "vite": "^5.2.8"
+  }
+}
