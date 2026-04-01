@@ -28,6 +28,7 @@ Thumbs.db
 # Deploy bundles / dumps
 deploy/mongo-dump/
 *.tgz
+deploy/_diag_400.py
 
 # Cursor / tooling
 .cursor/

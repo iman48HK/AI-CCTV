@@ -47,11 +47,18 @@
           <p class="settings-view__hint">Add and manage custom roles that can be assigned when creating/editing users.</p>
 
           <form class="settings-view__role-form" @submit.prevent="createRole">
-            <label>
-              <span>Role name</span>
-              <input v-model="roleForm.label" placeholder="e.g. Security Supervisor" required />
+            <label class="settings-view__role-field">
+              <span class="settings-view__role-field-label">Role name</span>
+              <input
+                v-model="roleForm.label"
+                class="settings-view__text-input"
+                type="text"
+                placeholder="e.g. Security Supervisor"
+                autocomplete="off"
+                required
+              />
             </label>
-            <button type="submit" class="settings-view__btn settings-view__btn--primary">Add role</button>
+            <button type="submit" class="settings-view__btn settings-view__btn--primary settings-view__role-submit">Add role</button>
           </form>
 
           <ul class="settings-view__list">
@@ -395,8 +402,50 @@ watch(isSystemAdmin, (v) => {
   flex-wrap: wrap;
 }
 
-.settings-view__role-form label {
-  min-width: 240px;
+.settings-view__role-field {
+  flex: 1 1 16rem;
+  min-width: min(100%, 20rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.settings-view__role-field-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.settings-view__text-input {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(0, 0, 0, 0.22);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-sizing: border-box;
+  line-height: 1.35;
+}
+
+.settings-view__text-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 400;
+}
+
+.settings-view__text-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.12);
+}
+
+.settings-view__role-submit {
+  flex-shrink: 0;
+  align-self: flex-end;
+  min-height: 2.5rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
 }
 
 .settings-view__link { color: #81d4fa; text-decoration: none; font-size: 0.9rem; }

@@ -27,8 +27,10 @@ if [[ ! -f /etc/nginx/ssl/kwh.crt ]]; then
     -subj "/CN=${PUBLIC_IP}"
 fi
 
-sed "s|/root/kwh-face-app|${APP_ROOT}|g" "${APP_ROOT}/deploy/nginx-kwh.conf" > /etc/nginx/sites-available/kwh
+sed "s|/var/www/kwh-face-app|${APP_ROOT}|g" "${APP_ROOT}/deploy/nginx-kwh.conf" > /etc/nginx/sites-available/kwh
 ln -sf /etc/nginx/sites-available/kwh /etc/nginx/sites-enabled/kwh
+cp "${APP_ROOT}/deploy/nginx-kwh-http-redirect.conf" /etc/nginx/sites-available/kwh-http-redirect
+ln -sf /etc/nginx/sites-available/kwh-http-redirect /etc/nginx/sites-enabled/00-kwh-http-redirect
 rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
 nginx -t
 systemctl enable nginx
